@@ -1,3 +1,10 @@
+
+```
+git submodule add https://github.com/EloiStree/2024_10_19_gdp_relocation_rotation.git addons/2024_10_19_gdp_relocation_rotation
+git submodule update --init --recursive
+```
+
+
 # 2024_10_19_gdp_relocation_rotation
 
 > Toolbox to relocate point and rotation at zero then back to a Node3D space
