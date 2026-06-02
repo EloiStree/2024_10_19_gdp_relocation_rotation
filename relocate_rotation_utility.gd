@@ -2,35 +2,35 @@
 class_name RelocateRotationUtility
 extends Node
 
-class RefToVector3Quaternion
-    var vector3: Vector3
-    var quaternion: Quaternion
+class RefToVector3Quaternion:
+	var vector3: Vector3
+	var quaternion: Quaternion
 
-class RefToVector3
-    var vector3: Vector3
+class RefToVector3:
+	var vector3: Vector3
 
-class RefToQuaternion
-    var quaternion: Quaternion
+class RefToQuaternion:
+	var quaternion: Quaternion
 
 #region ROTATE AROUND PIVOT
 
 static func rotate_point_around_pivot(point: Vector3, pivot: Vector3, euler_angles: Vector3) -> Vector3:
-    # UNITY CODE #         
-    #public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
-    #         {
-    #             return RotatePointAroundPivot(point, pivot, Quaternion.Euler(angles));
-    #         }
+	# UNITY CODE #         
+	#public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
+	#         {
+	#             return RotatePointAroundPivot(point, pivot, Quaternion.Euler(angles));
+	#         }
 
-    var rotation = Quaternion.from_euler(euler_angles)
-    return rotate_point_around_pivot(point, pivot, rotation)
+	var rotation = Quaternion.from_euler(euler_angles)
+	return rotate_point_around_pivot(point, pivot, rotation)
 
-static func rotate_point_around_pivot(point: Vector3, pivot: Vector3, rotation: Quaternion, out_point_rotated: RefToVector3):
-    ##         public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Quaternion rotation)
-    #         {
-    #             return rotation * (point - pivot) + pivot;
-    #         }
-
-    out_point_rotated.vector3 = rotation * (point - pivot) + pivot
+#static func rotate_point_around_pivot(point: Vector3, pivot: Vector3, rotation: Quaternion, out_point_rotated: RefToVector3):
+	###         public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Quaternion rotation)
+	##         {
+	##             return rotation * (point - pivot) + pivot;
+	##         }
+#
+	#out_point_rotated.vector3 = rotation * (point - pivot) + pivot
 
 
 
@@ -38,16 +38,16 @@ static func rotate_point_around_pivot(point: Vector3, pivot: Vector3, rotation: 
 
 #region WORLD TO LOCAL
 static func get_world_to_local_point_from_root_position_rotation(world_position: Vector3, position_reference: Vector3, rotation_reference: Quaternion) -> Vector3:
-    # UNITY CODE
-    #         public static void GetWorldToLocal_Point(in Vector3 worldPosition, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 localPosition) =>
-    #         localPosition = Quaternion.Inverse(rotationReference) * (worldPosition - positionReference);
-    return rotation_reference.inverse() * (world_position - position_reference)
+	# UNITY CODE
+	#         public static void GetWorldToLocal_Point(in Vector3 worldPosition, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 localPosition) =>
+	#         localPosition = Quaternion.Inverse(rotationReference) * (worldPosition - positionReference);
+	return rotation_reference.inverse() * (world_position - position_reference)
 
 
 static func get_world_to_local_point_from_root_reference(world_position: Vector3, root_reference: Node3D) -> Vector3:
-    var position_reference = root_reference.global_transform.origin
-    var rotation_reference = root_reference.global_transform.basis.get_quaternion()
-    return get_world_to_local_point_from_root_position_rotation(world_position, position_reference, rotation_reference)
+	var position_reference = root_reference.global_transform.origin
+	var rotation_reference = root_reference.global_transform.basis.get_quaternion()
+	return get_world_to_local_point_from_root_position_rotation(world_position, position_reference, rotation_reference)
 
 
 
@@ -56,16 +56,16 @@ static func get_world_to_local_point_from_root_reference(world_position: Vector3
 
 #region RELOCATE: POINT
 static func get_local_to_world_point_from_root_position_rotation(local_position: Vector3, position_reference: Vector3, rotation_reference: Quaternion) -> Vector3:
-    # UNITY CODE
-    #         public static void GetLocalToWorld_Point(in Vector3 localPosition, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 worldPosition) =>
-    #             worldPosition = (rotationReference * localPosition) + (positionReference);
-    return (rotation_reference * local_position) + position_reference
+	# UNITY CODE
+	#         public static void GetLocalToWorld_Point(in Vector3 localPosition, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 worldPosition) =>
+	#             worldPosition = (rotationReference * localPosition) + (positionReference);
+	return (rotation_reference * local_position) + position_reference
 
 
 static func get_local_to_world_point_from_root_reference(local_position: Vector3, root_reference: Node3D) -> Vector3:
-    var position_reference = root_reference.global_transform.origin
-    var rotation_reference = root_reference.global_transform.basis.get_quaternion()
-    return get_local_to_world_point_from_root_position_rotation(local_position, position_reference, rotation_reference)
+	var position_reference = root_reference.global_transform.origin
+	var rotation_reference = root_reference.global_transform.basis.get_quaternion()
+	return get_local_to_world_point_from_root_position_rotation(local_position, position_reference, rotation_reference)
 
 #endregion
 
@@ -73,55 +73,55 @@ static func get_local_to_world_point_from_root_reference(local_position: Vector3
 #region RELOCATE: DIRECTION AND POINT
 #region LOCAL TO WORLD
 static func get_local_to_world_direction_and_point_from_root_position_rotation(
-    local_position: Vector3,
-    local_rotation: Quaternion,
-    position_reference: RefToVector3,
-    rotation_reference: RefToQuaternion)->void:
-    # IN UNITY THIS IS THE CODE
-    #         public static void GetLocalToWorld_DirectionalPoint(in Vector3 localPosition, in Quaternion localRotation, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 worldPosition, out Quaternion worldRotation)
-    #         {
-    #             /// I need to verify the commutativity of this code. 
-    #             /// I think it was ok then had a bug in a game link to this methode and thr commutative property
-    #             worldRotation = rotationReference * localRotation;
-    #             worldPosition = (rotationReference * localPosition) + (positionReference);
-    #         }
-    var world_rotation = rotation_reference.quaternion * local_rotation
-    var world_position = (rotation_reference.quaternion * local_position) + position_reference.vector3
-    position_reference.vector3 = RefToVector3(world_position) 
-    rotation_reference.quaternion = RefToQuaternion(world_rotation)
+	local_position: Vector3,
+	local_rotation: Quaternion,
+	position_reference: RefToVector3,
+	rotation_reference: RefToQuaternion)->void:
+	# IN UNITY THIS IS THE CODE
+	#         public static void GetLocalToWorld_DirectionalPoint(in Vector3 localPosition, in Quaternion localRotation, in Vector3 positionReference, in Quaternion rotationReference, out Vector3 worldPosition, out Quaternion worldRotation)
+	#         {
+	#             /// I need to verify the commutativity of this code. 
+	#             /// I think it was ok then had a bug in a game link to this methode and thr commutative property
+	#             worldRotation = rotationReference * localRotation;
+	#             worldPosition = (rotationReference * localPosition) + (positionReference);
+	#         }
+	var world_rotation = rotation_reference.quaternion * local_rotation
+	var world_position = (rotation_reference.quaternion * local_position) + position_reference.vector3
+	position_reference.vector3 = RefToVector3(world_position) 
+	rotation_reference.quaternion = RefToQuaternion(world_rotation)
 
 
 static func get_local_to_world_direction_and_point_from_root_reference(
-    local_position: Vector3,
-    local_rotation: Quaternion,
-    root_reference: Node3D,
-    position_reference: RefToVector3,
-    rotation_reference: RefToQuaternion)->void:
-    var position_ref = root_reference.global_transform.origin
-    var rotation_ref = root_reference.global_transform.basis.get_quaternion()
-    get_local_to_world_direction_and_point_from_root_position_rotation(local_position, local_rotation, RefToVector3(position_ref), RefToQuaternion(rotation_ref), position_reference, rotation_reference)
+	local_position: Vector3,
+	local_rotation: Quaternion,
+	root_reference: Node3D,
+	position_reference: RefToVector3,
+	rotation_reference: RefToQuaternion)->void:
+	var position_ref = root_reference.global_transform.origin
+	var rotation_ref = root_reference.global_transform.basis.get_quaternion()
+	get_local_to_world_direction_and_point_from_root_position_rotation(local_position, local_rotation, RefToVector3(position_ref), RefToQuaternion(rotation_ref), position_reference, rotation_reference)
 #endregion
 #region WORLD TO LOCAL
 
 static func get_world_to_local_direction_and_point_from_root_position_rotation(
-    world_position: Vector3,
-    world_rotation: Quaternion,
-    position_reference: RefToVector3,
-    rotation_reference: RefToQuaternion)->void:
-    var local_rotation = rotation_reference.quaternion.inverse() * world_rotation
-    var local_position = rotation_reference.quaternion.inverse() * (world_position - position_reference.vector3)
-    position_reference.vector3 = RefToVector3(local_position) 
-    rotation_reference.quaternion = RefToQuaternion(local_rotation)
+	world_position: Vector3,
+	world_rotation: Quaternion,
+	position_reference: RefToVector3,
+	rotation_reference: RefToQuaternion)->void:
+	var local_rotation = rotation_reference.quaternion.inverse() * world_rotation
+	var local_position = rotation_reference.quaternion.inverse() * (world_position - position_reference.vector3)
+	position_reference.vector3 = RefToVector3(local_position) 
+	rotation_reference.quaternion = RefToQuaternion(local_rotation)
 
 static func get_world_to_local_direction_and_point_from_root_reference(
-    world_position: Vector3,
-    world_rotation: Quaternion,
-    root_reference: Node3D,
-    position_reference: RefToVector3,
-    rotation_reference: RefToQuaternion)->void:
-    var position_ref = root_reference.global_transform.origin
-    var rotation_ref = root_reference.global_transform.basis.get_quaternion()
-    get_world_to_local_direction_and_point_from_root_position_rotation(world_position, world_rotation, RefToVector3(position_ref), RefToQuaternion(rotation_ref), position_reference, rotation_reference)
+	world_position: Vector3,
+	world_rotation: Quaternion,
+	root_reference: Node3D,
+	position_reference: RefToVector3,
+	rotation_reference: RefToQuaternion)->void:
+	var position_ref = root_reference.global_transform.origin
+	var rotation_ref = root_reference.global_transform.basis.get_quaternion()
+	get_world_to_local_direction_and_point_from_root_position_rotation(world_position, world_rotation, RefToVector3(position_ref), RefToQuaternion(rotation_ref), position_reference, rotation_reference)
 
 
 #endregion
